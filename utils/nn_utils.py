@@ -69,7 +69,7 @@ def clean_equivariance_loss(z_next_pred, z_next_true, z_pre, z_next_pre, action,
 
     return equiv_loss
 
-
+"""
 def get_equivariance_loss(args, model, img, img_next, action, action_dim, ACTION_TYPE, device):
     if args.model == 'mdp':
         z = model.encode(img)
@@ -116,7 +116,7 @@ def get_equivariance_loss(args, model, img, img_next, action, action_dim, ACTION
             loss = equiv_loss +  ce_loss + entropy_reg
 
     return loss, total_recon_loss, equiv_loss, entropy_reg, recon
-
+"""
 def get_enr_loss(args, model, img, img_next, action):
     equiv_recon, recon = model(img, action)
 
