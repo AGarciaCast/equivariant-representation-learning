@@ -2,7 +2,6 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 import os
-from pytorch3d.transforms import matrix_to_quaternion, quaternion_to_matrix, so3_log_map
 import matplotlib.pyplot as plt
 from scipy.linalg import logm
 import ipdb

@@ -10,7 +10,6 @@ import torchvision.transforms as transforms
 import numpy as np
 from functools import reduce
 import utils.nn_utils as nn_utils
-from pytorch3d.transforms import matrix_to_quaternion, quaternion_to_matrix
 import ipdb
 
 class View(nn.Module):
@@ -71,6 +70,8 @@ class AE(nn.Module):
         batch_size = pose_plus_extra.shape[0]
         pose = pose_plus_extra[:, :group_dim]
         extra = pose_plus_extra[:, group_dim:]
+        # print(extra)
+
         if action_type == 'translate':
             new_pose = pose + action
         elif action_type == 'rotate':
@@ -82,11 +83,6 @@ class AE(nn.Module):
             elif method == 'lie_right':
                 new_pose = pose.view((batch_size, 3, 3)) @ action
                 new_pose = new_pose.view(batch_size, -1)
-            elif method == 'quaternion':
-                pose_to_matrix = quaternion_to_matrix(pose)
-                pose = action @ pose_to_matrix
-                pose_to_quaternion = matrix_to_quaternion(pose)
-                new_pose = pose_to_quaternion
         elif action_type == 'isometries_2d':
             res = torch.complex(pose[:,2], pose[:,3]) * torch.complex(torch.cos(action[:,2]), torch.sin(action[:,2]))
             new_pose = torch.cat((pose[:, :2] + action[:, :2], res.real.unsqueeze(1), res.imag.unsqueeze(1)), dim=-1)
@@ -94,7 +90,8 @@ class AE(nn.Module):
             new_trans = torch.complex(pose[:, 0], pose[:, 1]) + torch.complex(pose[:, 2], pose[:, 3]) * torch.complex(action[:, 0], action[:, 1])
             new_rot = torch.complex(pose[:,2], pose[:,3]) * torch.complex(torch.cos(action[:,2]), torch.sin(action[:,2]))
             new_pose = torch.cat((new_trans.real.unsqueeze(1), new_trans.imag.unsqueeze(1), new_rot.real.unsqueeze(1), new_rot.imag.unsqueeze(1)), dim=-1)
-
+            # print(new_pose.shape)
+            
         new_z_encoded = torch.cat((new_pose, extra), -1)
         return new_z_encoded
 

@@ -37,7 +37,8 @@ import ipdb
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--save-folder', type=str, default='checkpoints', help='Path to saved model')
+parser.add_argument('--save-folder', type=str, default='checkpoints/test', help='Path to saved model')
+parser.add_argument('--dataset', type=str, default='room_combined', help='Selected dataset')
 args_eval = parser.parse_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -81,15 +82,17 @@ elif args.dataset == 'room_combined_local':
 else:
     print("Invalid dataset")
 
+
 train_loader = torch.utils.data.DataLoader(dset,
-                                           batch_size=300, shuffle = True)
+                                           batch_size=1000, shuffle = True)
 
 device = 'cpu'
 model = load(model_file).to(device)
 model.eval()
 
 
-img, img_next, action, classes = next(iter(train_loader))
+# img, img_next, action, classes = next(iter(train_loader))
+img, img_next, action, classes =  torch.FloatTensor(dset.data[:, 0]), torch.FloatTensor(dset.data[:, 1]), torch.FloatTensor(dset.lbls), torch.FloatTensor(dset.classes)
 img_shape = img.shape[1:]
 
 
@@ -137,7 +140,7 @@ if (args.dataset == 'platonics' or args.dataset in ['mugs', 'chairs'] or args.da
 #ax.scatter(pose[:, 0], pose[:, 1], extra[:,0], c=colors)
 #ax.scatter(extra[:, 0], extra[:, 1], extra[:, 2], c=colors)
 
-ax.scatter(pose[:, 0], pose[:, 1], pose[:, 2], c=colors)
+# ax.scatter(pose[:, 0], pose[:, 1], pose[:, 2], c=colors)
 
 if args.method == 'naive':
     ax.scatter(pose[:, 0], pose[:, 1], pose[:,2], c=colors)
@@ -146,18 +149,32 @@ else:
 #ax.scatter(extra[:, 0], extra[:, 1], extra[:, 1], c=colors)
 ax.view_init(elev=32., azim=50.)  #43 67  #27 63
 ax.grid(False)
-plt.tight_layout()
-# plt.savefig('latent_space.png')
+plt.title("Latent space")
+plt.subplots_adjust(top=0.7)
+if args.dataset == 'room_combined':
+    plt.tight_layout()
+    plt.savefig('rooms_out/latent_space.png')
+    
 plt.show()
 
-room = 2
+
 if args.dataset == 'room_combined':
-    fig = plt.figure()
-    pose = pose[classes == room]
-    print(pose)
-    plt.scatter(pose[:,0], pose[:,1], color=mymap(room), s=100, alpha=.7)
-    ax  = plt.gca()
-    ax.set_aspect('equal')
-    plt.axis('off')
-    plt.savefig('room_map.png')
+    simpl_cls = np.unique(classes)
+    fig, ax = plt.subplots(1, len(simpl_cls))
+
+    
+    for idx, room in enumerate(simpl_cls):
+        
+        pose_k = pose[classes == room]
+        
+        with open(f'rooms_out/room_points_{int(room)}.npy', 'wb') as f:
+            np.save(f, pose_k)
+        
+        ax[idx].scatter(pose_k[:,0], pose_k[:,1], color=mymap(room), s=100, alpha=.7)
+        ax[idx].set_title(f"Room {room}")
+        
+    fig.suptitle("Translation encodings")
+    plt.subplots_adjust(top=0.7)
+    plt.tight_layout()
+    fig.savefig(f'rooms_out/room_map.png')
     plt.show()
