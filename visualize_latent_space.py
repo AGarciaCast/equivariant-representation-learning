@@ -153,7 +153,7 @@ plt.title("Latent space")
 plt.subplots_adjust(top=0.7)
 if args.dataset == 'room_combined':
     plt.tight_layout()
-    plt.savefig('rooms_out/latent_space.png')
+    plt.savefig('rooms_exp/Figs/latent_space.png')
     
 plt.show()
 
@@ -176,5 +176,5 @@ if args.dataset == 'room_combined':
     fig.suptitle("Translation encodings")
     plt.subplots_adjust(top=0.7)
     plt.tight_layout()
-    fig.savefig(f'rooms_out/room_map.png')
+    fig.savefig(f'rooms_exp/Figs/room_map.png')
     plt.show()
