@@ -10,7 +10,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
-show_animation = True
+show_animation = False
 
 
 class Path:
@@ -30,13 +30,13 @@ class Path:
         self.directions = []  # directions (1:forward, -1:backward)
 
 
-def plot_arrow(x, y, yaw, length=1.0, width=0.5, fc="r", ec="k"):
+def plot_arrow(x, y, yaw, length=1.0, width=0.5, fc="r", ec="k", label=None):
     if isinstance(x, list):
         for (ix, iy, iyaw) in zip(x, y, yaw):
             plot_arrow(ix, iy, iyaw)
     else:
         plt.arrow(x, y, length * math.cos(yaw), length * math.sin(yaw), fc=fc,
-                  ec=ec, head_width=width, head_length=width)
+                  ec=ec, head_width=width, head_length=width, label=label)
         plt.plot(x, y)
 
 

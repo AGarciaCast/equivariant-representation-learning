@@ -18,3 +18,5 @@ checkpoints_1-10/
 dataset_generation/
 evaluation
 checkpoints-eval/
+rooms_exp/Figs/imgPathRoom1/
+*.gif

@@ -27,7 +27,7 @@ STEER_CHANGE_COST = 5.0  # steer angle change penalty cost
 STEER_COST = 1.0  # steer angle change penalty cost
 H_COST = 5.0  # Heuristic cost
 
-show_animation = True
+show_animation = False
 
 
 class Node:
@@ -367,10 +367,10 @@ def verify_index(node, c):
 def calc_index(node, c):
     ind = (node.yaw_index - c.min_yaw) * c.x_w * c.y_w + \
           (node.y_index - c.min_y) * c.x_w + (node.x_index - c.min_x)
-
+    """
     if ind <= 0:
         print("Error(calc_index):", ind)
-
+    """
     return ind
 
 
