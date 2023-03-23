@@ -91,14 +91,14 @@ def calc_motion_inputs():
             yield [steer, d]
 
 
-def get_neighbors(current, config, ox, oy, kd_tree):
+def get_neighbors(current, config, ox, oy, kd_tree, epsilon=0.0):
     for steer, d in calc_motion_inputs():
-        node = calc_next_node(current, steer, d, config, ox, oy, kd_tree)
+        node = calc_next_node(current, steer, d, config, ox, oy, kd_tree, epsilon=epsilon)
         if node and verify_index(node, config):
             yield node
 
 
-def calc_next_node(current, steer, direction, config, ox, oy, kd_tree):
+def calc_next_node(current, steer, direction, config, ox, oy, kd_tree, epsilon=0.0):
     x, y, yaw = current.x_list[-1], current.y_list[-1], current.yaw_list[-1]
 
     arc_l = XY_GRID_RESOLUTION * 1.5
@@ -109,7 +109,7 @@ def calc_next_node(current, steer, direction, config, ox, oy, kd_tree):
         y_list.append(y)
         yaw_list.append(yaw)
 
-    if not check_car_collision(x_list, y_list, yaw_list, ox, oy, kd_tree):
+    if not check_car_collision(x_list, y_list, yaw_list, ox, oy, kd_tree, epsilon=epsilon):
         return None
 
     d = direction == 1
@@ -146,7 +146,7 @@ def is_same_grid(n1, n2):
     return False
 
 
-def analytic_expansion(current, goal, ox, oy, kd_tree):
+def analytic_expansion(current, goal, ox, oy, kd_tree, epsilon=0.0):
     start_x = current.x_list[-1]
     start_y = current.y_list[-1]
     start_yaw = current.yaw_list[-1]
@@ -166,7 +166,7 @@ def analytic_expansion(current, goal, ox, oy, kd_tree):
     best_path, best = None, None
 
     for path in paths:
-        if check_car_collision(path.x, path.y, path.yaw, ox, oy, kd_tree):
+        if check_car_collision(path.x, path.y, path.yaw, ox, oy, kd_tree, epsilon=epsilon):
             cost = calc_rs_path_cost(path)
             if not best or best > cost:
                 best = cost
@@ -176,8 +176,8 @@ def analytic_expansion(current, goal, ox, oy, kd_tree):
 
 
 def update_node_with_analytic_expansion(current, goal,
-                                        c, ox, oy, kd_tree):
-    path = analytic_expansion(current, goal, ox, oy, kd_tree)
+                                        c, ox, oy, kd_tree, epsilon=0.0):
+    path = analytic_expansion(current, goal, ox, oy, kd_tree, epsilon=epsilon)
 
     if path:
         if show_animation:
@@ -237,7 +237,7 @@ def calc_rs_path_cost(reed_shepp_path):
     return cost
 
 
-def hybrid_a_star_planning(start, goal, ox, oy, xy_resolution, yaw_resolution):
+def hybrid_a_star_planning(start, goal, ox, oy, xy_resolution, yaw_resolution, epsilon=0.0):
     """
     start: start node
     goal: goal node
@@ -297,14 +297,14 @@ def hybrid_a_star_planning(start, goal, ox, oy, xy_resolution, yaw_resolution):
                 plt.pause(0.001)
 
         is_updated, final_path = update_node_with_analytic_expansion(
-            current, goal_node, config, ox, oy, obstacle_kd_tree)
+            current, goal_node, config, ox, oy, obstacle_kd_tree, epsilon=epsilon)
 
         if is_updated:
             print("path found")
             break
 
         for neighbor in get_neighbors(current, config, ox, oy,
-                                      obstacle_kd_tree):
+                                      obstacle_kd_tree, epsilon=epsilon):
             neighbor_index = calc_index(neighbor, config)
             if neighbor_index in closedList:
                 continue

@@ -21,14 +21,14 @@ LB = 1.0  # distance from rear to vehicle back end
 MAX_STEER = 0.6  # [rad] maximum steering angle
 
 BUBBLE_DIST = (LF - LB) / 2.0  # distance from rear to center of vehicle.
-BUBBLE_R = np.hypot((LF + LB) / 2.0, W / 2.0)  # bubble radius
+BUBBLE_R = np.hypot((LF + LB) / 2.0, W / 2.0)   # bubble radius
 
 # vehicle rectangle vertices
 VRX = [LF, LF, -LB, -LB, LF]
 VRY = [W / 2, -W / 2, -W / 2, W / 2, W / 2]
 
 
-def check_car_collision(x_list, y_list, yaw_list, ox, oy, kd_tree):
+def check_car_collision(x_list, y_list, yaw_list, ox, oy, kd_tree, epsilon=0.0):
     for i_x, i_y, i_yaw in zip(x_list, y_list, yaw_list):
         cx = i_x + BUBBLE_DIST * cos(i_yaw)
         cy = i_y + BUBBLE_DIST * sin(i_yaw)
@@ -39,13 +39,14 @@ def check_car_collision(x_list, y_list, yaw_list, ox, oy, kd_tree):
             continue
 
         if not rectangle_check(i_x, i_y, i_yaw,
-                               [ox[i] for i in ids], [oy[i] for i in ids]):
+                               [ox[i] for i in ids], [oy[i] for i in ids],
+                               epsilon=epsilon):
             return False  # collision
 
     return True  # no collision
 
 
-def rectangle_check(x, y, yaw, ox, oy):
+def rectangle_check(x, y, yaw, ox, oy, epsilon=0.0):
     # transform obstacles to base link frame
     rot = rot_mat_2d(yaw)
     for iox, ioy in zip(ox, oy):
@@ -54,7 +55,7 @@ def rectangle_check(x, y, yaw, ox, oy):
         converted_xy = np.stack([tx, ty]).T @ rot
         rx, ry = converted_xy[0], converted_xy[1]
 
-        if not (rx > LF or rx < -LB or ry > W / 2.0 or ry < -W / 2.0):
+        if not (rx > LF + epsilon or rx < -LB - epsilon or ry > W / 2.0 + epsilon or ry < -W / 2.0 - epsilon):
             return False  # no collision
 
     return True  # collision
